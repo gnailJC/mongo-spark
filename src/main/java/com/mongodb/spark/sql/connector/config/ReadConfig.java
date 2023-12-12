@@ -292,6 +292,10 @@ public final class ReadConfig extends AbstractMongoConfig {
 
   private static final boolean OUTPUT_EXTENDED_JSON_DEFAULT = false;
 
+  public static final String IGNORE_INVALID_FIELD_DATA = "ignoreInvalidFieldData";
+
+  private static final boolean IGNORE_INVALID_FIELD_DATA_DEFAULT = false;
+
   private final List<BsonDocument> aggregationPipeline;
 
   /**
@@ -420,6 +424,10 @@ public final class ReadConfig extends AbstractMongoConfig {
    */
   public boolean outputExtendedJson() {
     return getBoolean(OUTPUT_EXTENDED_JSON_CONFIG, OUTPUT_EXTENDED_JSON_DEFAULT);
+  }
+
+  public boolean ignoreInvalidFieldData() {
+      return getBoolean(IGNORE_INVALID_FIELD_DATA, IGNORE_INVALID_FIELD_DATA_DEFAULT);
   }
 
   /**

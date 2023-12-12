@@ -71,7 +71,7 @@ final class MongoContinuousStream implements ContinuousStream {
         MongoOffset.getInitialOffset(readConfig));
     this.readConfig = readConfig;
     this.bsonDocumentToRowConverter =
-        new BsonDocumentToRowConverter(schema, readConfig.outputExtendedJson());
+        new BsonDocumentToRowConverter(schema, readConfig.outputExtendedJson(), readConfig.ignoreInvalidFieldData());
   }
 
   @Override

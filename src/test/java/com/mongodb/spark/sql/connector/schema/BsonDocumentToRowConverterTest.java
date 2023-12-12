@@ -60,13 +60,13 @@ import org.junit.jupiter.api.Test;
 public class BsonDocumentToRowConverterTest extends SchemaTest {
 
   private static final BsonDocumentToRowConverter CONVERTER =
-      new BsonDocumentToRowConverter(new StructType(), false);
+      new BsonDocumentToRowConverter(new StructType(), false, false);
 
   private static final BiFunction<DataType, BsonValue, Object> CONVERT =
       (dataType, bsonValue) -> CONVERTER.convertBsonValue("", dataType, bsonValue);
 
   private static final BsonDocumentToRowConverter EXTENDED_CONVERTER =
-      new BsonDocumentToRowConverter(new StructType(), true);
+      new BsonDocumentToRowConverter(new StructType(), true, false);
 
   private static final BiFunction<DataType, BsonValue, Object> EXTENDED_CONVERT =
       (dataType, bsonValue) -> EXTENDED_CONVERTER.convertBsonValue("", dataType, bsonValue);
@@ -459,7 +459,7 @@ public class BsonDocumentToRowConverterTest extends SchemaTest {
   @DisplayName("test fromBsonDocument")
   void testFromBsonDocument() {
     BsonDocumentToRowConverter bsonDocumentToRowConverter =
-        new BsonDocumentToRowConverter(ALL_TYPES_ROW.schema(), false);
+        new BsonDocumentToRowConverter(ALL_TYPES_ROW.schema(), false, false);
     GenericRowWithSchema actual = bsonDocumentToRowConverter.toRow(BSON_DOCUMENT_ALL_TYPES);
 
     assertRows(ALL_TYPES_ROW, actual);

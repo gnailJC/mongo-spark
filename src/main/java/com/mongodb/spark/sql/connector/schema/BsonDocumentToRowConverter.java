@@ -86,6 +86,7 @@ public final class BsonDocumentToRowConverter implements Serializable {
   private final Function<Row, InternalRow> rowToInternalRowFunction;
   private final StructType schema;
   private final boolean outputExtendedJson;
+  private final boolean ignoreInvalidFieldData;
 
   /**
    * Create a new instance
@@ -94,11 +95,12 @@ public final class BsonDocumentToRowConverter implements Serializable {
    * @param outputExtendedJson if true will produce extended JSON for any fields that have the
    *     String datatype.
    */
-  public BsonDocumentToRowConverter(final StructType schema, final boolean outputExtendedJson) {
-    this.schema = schema;
-    this.rowToInternalRowFunction = new RowToInternalRowFunction(schema);
-    this.outputExtendedJson = outputExtendedJson;
-  }
+    public BsonDocumentToRowConverter(final StructType schema, final boolean outputExtendedJson, final boolean ignoreInvalidFieldData) {
+        this.schema = schema;
+        this.rowToInternalRowFunction = new RowToInternalRowFunction(schema);
+        this.outputExtendedJson = outputExtendedJson;
+        this.ignoreInvalidFieldData = ignoreInvalidFieldData;
+    }
 
   /** @return the schema for the converter */
   public StructType getSchema() {
@@ -132,43 +134,51 @@ public final class BsonDocumentToRowConverter implements Serializable {
   @VisibleForTesting
   Object convertBsonValue(
       final String fieldName, final DataType dataType, final BsonValue bsonValue) {
-    if (bsonValue.isNull()) {
-      return null;
-    } else if (dataType instanceof StructType) {
-      return convertToRow(fieldName, (StructType) dataType, bsonValue);
-    } else if (dataType instanceof MapType) {
-      return convertToMap(fieldName, (MapType) dataType, bsonValue);
-    } else if (dataType instanceof ArrayType) {
-      return convertToArray(fieldName, (ArrayType) dataType, bsonValue);
-    } else if (dataType instanceof BinaryType) {
-      return convertToBinary(fieldName, dataType, bsonValue);
-    } else if (dataType instanceof BooleanType) {
-      return convertToBoolean(fieldName, dataType, bsonValue);
-    } else if (dataType instanceof DateType) {
-      return convertToTimestamp(fieldName, dataType, bsonValue);
-    } else if (dataType instanceof TimestampType) {
-      return convertToTimestamp(fieldName, dataType, bsonValue);
-    } else if (dataType instanceof FloatType) {
-      return convertToFloat(fieldName, dataType, bsonValue);
-    } else if (dataType instanceof IntegerType) {
-      return convertToInteger(fieldName, dataType, bsonValue);
-    } else if (dataType instanceof DoubleType) {
-      return convertToDouble(fieldName, dataType, bsonValue);
-    } else if (dataType instanceof ShortType) {
-      return convertToShort(fieldName, dataType, bsonValue);
-    } else if (dataType instanceof ByteType) {
-      return convertToByte(fieldName, dataType, bsonValue);
-    } else if (dataType instanceof LongType) {
-      return convertToLong(fieldName, dataType, bsonValue);
-    } else if (dataType instanceof DecimalType) {
-      return convertToDecimal(fieldName, dataType, bsonValue);
-    } else if (dataType instanceof StringType) {
-      return convertToString(bsonValue);
-    } else if (dataType instanceof NullType) {
-      return null;
-    }
+      try {
+          if (bsonValue.isNull()) {
+              return null;
+          } else if (dataType instanceof StructType) {
+              return convertToRow(fieldName, (StructType) dataType, bsonValue);
+          } else if (dataType instanceof MapType) {
+              return convertToMap(fieldName, (MapType) dataType, bsonValue);
+          } else if (dataType instanceof ArrayType) {
+              return convertToArray(fieldName, (ArrayType) dataType, bsonValue);
+          } else if (dataType instanceof BinaryType) {
+              return convertToBinary(fieldName, dataType, bsonValue);
+          } else if (dataType instanceof BooleanType) {
+              return convertToBoolean(fieldName, dataType, bsonValue);
+          } else if (dataType instanceof DateType) {
+              return convertToTimestamp(fieldName, dataType, bsonValue);
+          } else if (dataType instanceof TimestampType) {
+              return convertToTimestamp(fieldName, dataType, bsonValue);
+          } else if (dataType instanceof FloatType) {
+              return convertToFloat(fieldName, dataType, bsonValue);
+          } else if (dataType instanceof IntegerType) {
+              return convertToInteger(fieldName, dataType, bsonValue);
+          } else if (dataType instanceof DoubleType) {
+              return convertToDouble(fieldName, dataType, bsonValue);
+          } else if (dataType instanceof ShortType) {
+              return convertToShort(fieldName, dataType, bsonValue);
+          } else if (dataType instanceof ByteType) {
+              return convertToByte(fieldName, dataType, bsonValue);
+          } else if (dataType instanceof LongType) {
+              return convertToLong(fieldName, dataType, bsonValue);
+          } else if (dataType instanceof DecimalType) {
+              return convertToDecimal(fieldName, dataType, bsonValue);
+          } else if (dataType instanceof StringType) {
+              return convertToString(bsonValue);
+          } else if (dataType instanceof NullType) {
+              return null;
+          }
 
-    throw invalidFieldData(fieldName, dataType, bsonValue);
+          throw invalidFieldData(fieldName, dataType, bsonValue);
+      } catch (DataException e) {
+          if (this.ignoreInvalidFieldData) {
+              return null;
+          } else {
+              throw e;
+          }
+      }
   }
 
   private JsonWriterSettings getJsonWriterSettings() {
