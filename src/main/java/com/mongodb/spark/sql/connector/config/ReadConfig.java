@@ -253,6 +253,13 @@ public final class ReadConfig extends AbstractMongoConfig {
       "change.stream.startup.mode.timestamp.start.at.operation.time";
 
   static final String STREAMING_STARTUP_MODE_TIMESTAMP_START_AT_OPERATION_TIME_DEFAULT = "-1";
+
+  /**
+   * 微批模式下，单个微批的数据窗口大小，用于控制单个批次的大小。默认为 "-1"，表示不限制，表示读到批次启动时的最新时间。
+   */
+  public static final String TG_STREAMING_MICRO_BATCH_TIME_DURATION = "tg.change.stream.micro.batch.time.duration";
+
+  static final long TG_STREAMING_MICRO_BATCH_TIME_DURATION_DEFAULT = -1;
   private static final BsonTimestamp STREAMING_LATEST_TIMESTAMP = new BsonTimestamp(-1);
 
   /**
@@ -409,6 +416,13 @@ public final class ReadConfig extends AbstractMongoConfig {
         throw new AssertionError(
             format("Unexpected change stream startup mode %s", streamingStartupMode));
     }
+  }
+
+  public long getStreamMicroBatchTimeDuration() {
+    return getLong(
+            TG_STREAMING_MICRO_BATCH_TIME_DURATION,
+            TG_STREAMING_MICRO_BATCH_TIME_DURATION_DEFAULT
+    );
   }
 
   /** @return the micro batch max partition count */
